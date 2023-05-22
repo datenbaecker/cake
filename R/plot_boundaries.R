@@ -2,12 +2,15 @@
 StatBoundary <- ggplot2::ggproto(
   "StatBoundary", ggplot2::Stat,
   compute_panel = function(data, scales, data_provider = NULL, gov_level = "canton") {
+    if (is.null(data_provider)) {
+      datacake_abort("dataprovider_required")
+    }
     cols_to_keep <- setdiff(names(data), c("x", "y", "group", "subgroup"))
     data_keep <- data[, cols_to_keep] %>%
       unique()
     sb <- data_provider$serve("swiss_boundaries", "rds") %>%
       filter(entity == gov_level)
-    if (is.character(data_keep$id)) {
+    if (!is.numeric(data_keep$id)) {
       sb <- sb %>%
         mutate(id = label)
     } else {
@@ -26,7 +29,40 @@ StatBoundary <- ggplot2::ggproto(
   required_aes = c("id")
 )
 
+#' @title Plot Swiss Boundaries
+#' @rdname geom_swiss_boundaries
+#'
+#' @param mapping Set of aesthetic mappings created by \code{\link[ggplot2]{aes}}.
+#' @param data Data with the units for plotting
+#' @param data_provider A datacake data provider.
+#' @param position
+#' @param ...
+#' @param na.rm
+#' @param show.legend
+#' @param inherit.aes
+#' @param gov_level Goverment level (either \dQuote{commune} or \dQuote{canton})
+#'
+#' @section Aesthetics:
+#' The only required aesthetics is \code{id} and should contain the
+#' identification for the geographical unit (canton or commune).
+#' If the column is numeric, the values get interpreted as
+#' or canton number according to the definition of the Swiss
+#' Federal Statistical Office (see \url{https://www.bfs.admin.ch/bfs/de/home/grundlagen/agvch/identifikatoren-gemeinde.html}).
+#' Otherwise the column gets interpreted as commune name or
+#' abbreviated canton (ZH, BE, LU, \dots).
+#' The aesthetics \code{x}, \code{y}, \code{group} and \code{subgroup} are ignored.
+#' Otherwise the function supports the same aesthetics as \code{\link[ggplot2]{geom_polygon}}
+#'
+#' @examples
+#' \dontrun{
+#' dp <- LocalDatacakeProvider("<path/to/provider>")
+#' cantons <- tibble(label = c("LU", "ZH"))
+#' ggplot(cantons, aes(id = label)) + geom_canton(data_provider = dp)
+#' }
+#'
+#'
 #' @export
+#'
 geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, gov_level = c("canton", "commune")) {
   gov_level <- match.arg(gov_level, c("canton", "commune"))
@@ -35,6 +71,7 @@ geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = N
         params = list(na.rm = na.rm, gov_level = gov_level, data_provider = data_provider, ...))
 }
 
+#' @rdname geom_swiss_boundaries
 #' @export
 geom_canton <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
@@ -45,6 +82,7 @@ geom_canton <- function(mapping = NULL, data = NULL, data_provider = NULL, posit
 
 }
 
+#' @rdname geom_swiss_boundaries
 #' @export
 geom_commune <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {

@@ -1,12 +1,19 @@
 Package: datacake
-Depends: R (>= 3.6.0)
 Title: Swiss Open Data at Your Fingertips
 Version: 0.0.0.9000
 Authors@R: 
-    person("Lukas", "Huwiler", , "lukas.huwiler@datenbaecker.ch", role = c("aut", "cre"))
+  person("Lukas", "Huwiler", , "lukas.huwiler@datenbaecker.ch", role = c("aut", "cre"))
 Description: This package enriches your data with openly accessible government data.
   Get openly accessible information for Switzerland without tedious data preparation.
 License: GPL (>= 3)
+Depends: 
+  R (>= 3.6.0)
+Imports:
+  cli (>= 3.4.0),
+  R6,
+  dplyr,
+  ggplot2,
+  rappdirs
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

@@ -81,7 +81,15 @@ create_import_function <- function(base_path, ext, read_func) {
   }
 }
 
-LocalDatacakeProvider <- R6::R6Class(
+
+# DataProviderClass <- R6::R6Class(
+#   "DataProvider",
+#   public = list(
+#     serve =
+#   )
+# )
+
+LocalDatacakeProviderClass <- R6::R6Class(
   "LocalDatacakeProvider",
   public = list(
     initialize = function(resource_folder) {
@@ -134,5 +142,69 @@ LocalDatacakeProvider <- R6::R6Class(
   )
 )
 
+#' @export
+LocalDatacakeProvider <- function(resource_path) {
+  LocalDatacakeProviderClass$new(resource_path)
+}
 
-
+#' download_rds <- function(what) {
+#'   url <- file.path(host, paste0(what, ".rds"))
+#'   res <- httr::GET(url)
+#'   file_conn <- httr::content(res) %>%
+#'     rawConnection() %>%
+#'     gzcon()
+#'   readRDS(file_conn)
+#' }
+#'
+#' RemoteDatacakeProviderClass <- R6::R6Class(
+#'   "RemoteDatacakeProvider",
+#'   public = list(
+#'     initialize = function(host) {
+#'       self$host <- host
+#'       private$data_catalog <- paste0(host, "/data-catalog") %>%
+#'         httr::GET() %>%
+#'         httr::content(as = "parsed")
+#'       private$cached_data <- menu_to_cache(self$menu())
+#'       private$read_fct <- list(
+#'         rds = download_rds
+#'       )
+#'     },
+#'     serve = function(what, flavor) {
+#'       if (!self$exists(what, flavor)) {
+#'         datacake_abort("not_in_menu")
+#'       }
+#'       dt <- private$get_cached_data(what, flavor)
+#'       if (is.null(dt)) {
+#'         import <- private$read_fct[[flavor]]
+#'         dt <- import(what)
+#'         private$cached_data[[what]][[flavor]] <- dt
+#'       }
+#'       dt
+#'     },
+#'     menu = function() {
+#'       self$data_catalog
+#'     },
+#'     exists = function(what, flavor) {
+#'       menu <- self$menu()
+#'       what %in% names(menu) && flavor %in% menu[[what]]
+#'     },
+#'     host = NULL
+#'   ),
+#'   private = list(
+#'     cached_data = list(),
+#'     get_cached_data = function(what, flavor) {
+#'       dt <- NULL
+#'       if (what %in% names(private$cached_data) && flavor %in% names(private$cached_data[[what]])) {
+#'         dt <- private$cached_data[[what]][[flavor]]
+#'       }
+#'       dt
+#'     },
+#'     read_fct = NULL,
+#'     data_catalog = NULL
+#'   )
+#' )
+#'
+#' #' @export
+#' LocalDatacakeProvider <- function(resource_path) {
+#'   LocalDatacakeProviderClass$new(resource_path)
+#' }

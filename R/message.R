@@ -39,6 +39,9 @@ get_datacake_msg <- function(what) {
     not_in_menu = c(
       "en" = "Value for {.arg what} or {.arg flavor} is invalid. Check {.code menu} for data catalog.",
       "de" = "Wert für {.arg what} oder {.arg flavor} ist nicht gültig. Siehe {.code menu} für Datenkatalog."
+    ),
+    dataprovider_required = c(
+      "en" = "No value for {.arg data_provider} provided."
     )
   )
   rel_msg <- msg[[what]]
