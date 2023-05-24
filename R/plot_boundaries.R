@@ -63,15 +63,16 @@ StatBoundary <- ggplot2::ggproto(
 #'
 #' @examples
 #' \dontrun{
-#' dp <- LocalDatacakeProvider("<path/to/provider>")
 #' cantons <- tibble(label = c("LU", "ZH"))
-#' ggplot(cantons, aes(id = label)) + geom_canton(data_provider = dp)
+#' ggplot(cantons, aes(id = label)) +
+#'   geom_canton() +
+#'   geom_commune(data = tibble(label = c("Luzern", "Zürich", "Zug")), fill = "white", color = "darkgrey")
 #' }
 #'
 #'
 #' @export
 #'
-geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
+geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, gov_level = c("canton", "commune")) {
   gov_level <- match.arg(gov_level, c("canton", "commune"))
   layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
@@ -81,7 +82,7 @@ geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = N
 
 #' @rdname geom_swiss_boundaries
 #' @export
-geom_canton <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
+geom_canton <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
 
     layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
@@ -92,7 +93,7 @@ geom_canton <- function(mapping = NULL, data = NULL, data_provider = NULL, posit
 
 #' @rdname geom_swiss_boundaries
 #' @export
-geom_commune <- function(mapping = NULL, data = NULL, data_provider = NULL, position = "identity", ...,
+geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
 
     layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",

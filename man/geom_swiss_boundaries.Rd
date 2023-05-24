@@ -9,7 +9,7 @@
 geom_swiss_boundaries(
   mapping = NULL,
   data = NULL,
-  data_provider = NULL,
+  data_provider = default_data_provider(),
   position = "identity",
   ...,
   na.rm = FALSE,
@@ -21,7 +21,7 @@ geom_swiss_boundaries(
 geom_canton(
   mapping = NULL,
   data = NULL,
-  data_provider = NULL,
+  data_provider = default_data_provider(),
   position = "identity",
   ...,
   na.rm = FALSE,
@@ -32,7 +32,7 @@ geom_canton(
 geom_commune(
   mapping = NULL,
   data = NULL,
-  data_provider = NULL,
+  data_provider = default_data_provider(),
   position = "identity",
   ...,
   na.rm = FALSE,
@@ -67,9 +67,10 @@ Otherwise the function supports the same aesthetics as \code{\link[ggplot2]{geom
 
 \examples{
 \dontrun{
-dp <- LocalDatacakeProvider("<path/to/provider>")
 cantons <- tibble(label = c("LU", "ZH"))
-ggplot(cantons, aes(id = label)) + geom_canton(data_provider = dp)
+ggplot(cantons, aes(id = label)) +
+  geom_canton() +
+  geom_commune(data = tibble(label = c("Luzern", "Zürich", "Zug")), fill = "white", color = "darkgrey")
 }
 
 

@@ -137,14 +137,16 @@ datenbaecker <- function(cache_dir = NULL) {
 }
 
 #' @rdname datenbaecker
+#' @export
 local_data_provider <- function(cache_dir) {
   file_cache <- FileCache$new(cache_dir)
   list(cache = file_cache) %>%
     structure(class = c("local_data_provider", "data_provider"))
 }
 
-#' @param host
 #' @rdname datenbaecker
+#' @param host
+#' @export
 remote_data_provider <- function(host, cache_dir = NULL) {
   if (is.null(cache_dir)) {
     if (exists_default_cache()) {
@@ -160,6 +162,21 @@ remote_data_provider <- function(host, cache_dir = NULL) {
   list(cache = data_cache, host = host) %>%
     structure(class = c("remote_data_provider", "data_provider"))
 }
+
+create_default_data_provider <- function() {
+  default_provider <- datenbaecker()
+  function(dp = NULL) {
+    if (!is.null(dp)) {
+      default_provider <<- dp
+    }
+    default_provider
+  }
+}
+
+#' @rdname datenbaecker
+#' @param dp Data provider that should act as default provider. Default is \code{datenbaecker()}.
+#' @export
+default_data_provider <- create_default_data_provider()
 
 download_datacake <- function(dp, what) {
   expect_cls <- "remote_data_provider"

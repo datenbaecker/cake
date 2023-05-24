@@ -2,7 +2,7 @@
 ```r
 example_frame <- data.frame(
   kantone = c("LU", "ZH", "BE", "VD"),
-  kunden = c(c(1494, 3085, 3416, 2911)
+  kunden = c(1494, 3085, 3416, 2911)
 )  
 ```
 
