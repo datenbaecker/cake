@@ -16,7 +16,7 @@ StatBoundary <- ggplot2::ggproto(
     cols_to_keep <- setdiff(names(data), c("x", "y", "group", "subgroup"))
     data_keep <- data[, cols_to_keep] %>%
       unique()
-    sb <- data_provider$serve("swiss_boundaries", "rds") %>%
+    sb <- serve("swiss_boundaries", data_provider) %>%
       filter(entity == gov_level)
     if (!is.numeric(data_keep$id)) {
       sb <- sb %>%

@@ -42,6 +42,9 @@ get_datacake_msg <- function(what) {
     ),
     dataprovider_required = c(
       "en" = "No value for {.arg data_provider} provided."
+    ),
+    abort_class = c(
+      "en" = "Expected object of type {.cls {expected}} for argument {.arg {argument}}"
     )
   )
   rel_msg <- msg[[what]]
@@ -56,6 +59,10 @@ datacake_abort <- function(err, ...) {
     get_datacake_msg(err) %>%
       cli::cli_abort()
   })
+}
+
+datacake_abort_class <- function(expected, arg) {
+  datacake_abort("abort_class", expected = expected, argument = deparse(substitute(arg)))
 }
 
 datacake_alert <- function(msg, ...) {
