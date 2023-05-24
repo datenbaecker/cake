@@ -2,6 +2,7 @@
 
 S3method(serve,local_data_provider)
 S3method(serve,remote_data_provider)
+export(datenbaecker)
 export(geom_canton)
 export(geom_commune)
 export(geom_swiss_boundaries)
