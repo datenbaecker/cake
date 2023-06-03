@@ -1,95 +1,4 @@
 
-InMemoryCache <- R6::R6Class(
-  "InMemoryCache",
-  public = list(
-    initialize = function() {
-      cache <- vector(mode = "list", length = 1000L)
-      names(cache) <- rep("", 1000L)
-      private$cached_data <- cache
-    },
-    get = function(name) {
-      dt <- NULL
-      if (self$exists(name)) {
-        dt <- private$cached_data[[name]]
-      }
-      dt
-    },
-    exists = function(name) {
-      self$exists_in_memory(name)
-    },
-    exists_in_memory = function(name) {
-      name %in% names(private$cached_data)
-    },
-    add = function(obj, name, overwrite = FALSE) {
-      message("adding to cache")
-      if (!self$exists_in_memory(name) || overwrite) {
-        message("add...")
-        idx <- private$get_empty_slot()
-        if (idx > length(private$cached_data)) {
-          stop("max data cache size reached")
-        }
-        private$cached_data[[idx]] <- obj
-        names(private$cached_data)[idx] <- name
-      }
-    }
-  ),
-  private = list(
-    cached_data = NULL,
-    get_empty_slot = function() {
-      min(which(names(private$cached_data) == ""))
-    }
-  )
-)
-
-
-FileCache <- R6::R6Class(
-  "FileCache",
-  inherit = InMemoryCache,
-  public = list(
-    initialize = function(cache_dir) {
-      super$initialize()
-      private$cache_dir <- path.expand(cache_dir) %>%
-        normalizePath(mustWork = FALSE)
-      if (!dir.exists(private$cache_dir)) {
-        dir.create(private$cache_dir)
-      }
-    },
-    get = function(name) {
-      dt <- super$get(name)
-      if (is.null(dt) && self$exists(name)) {
-        message("loading file")
-        dt <- private$load_file(name)
-        super$add(dt, name)
-      }
-      dt
-    },
-    exists = function(name) {
-      file_path <- private$get_filepath(name)
-      super$exists(name) || file.exists(file_path)
-    },
-    add = function(obj, name, overwrite = FALSE) {
-      if (!self$exists(name) || overwrite) {
-        super$add(obj, name, overwrite)
-        private$save_file(obj, name)
-      }
-    }
-  ),
-  private = list(
-    cache_dir = NULL,
-    get_filepath = function(name) {
-      file.path(private$cache_dir, paste0(name, ".rds"))
-    },
-    load_file = function(name) {
-      file_path <- private$get_filepath(name)
-      readRDS(file_path)
-    },
-    save_file = function(obj, name) {
-      file_path <- private$get_filepath(name)
-      saveRDS(obj, file_path)
-    }
-  )
-)
-
 ask_cache_data <- function() {
   cli::cli_div(theme = cli_theme())
   datacake_alert_info("info_cache_data")
@@ -126,14 +35,17 @@ create_default_cache <- function() {
 
 #' @title Create Data Provider
 #'
-#' @param cache_dir
+#' @param cache_dir \code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
+#' The program asks if data should be saved to disk if the argument is \code{NULL}.
 #'
-#' @return
+#' @return An object of type \code{data_provider}
 #' @export
 #'
-#' @examples
 datenbaecker <- function(cache_dir = NULL) {
-  remote_data_provider("localhost:3890", cache_dir)
+  print_logo()
+  baecker_url <- "https://datacake.datenbaecker.ch"
+  dp <- remote_data_provider(baecker_url, cache_dir)
+  dp
 }
 
 #' @rdname datenbaecker
@@ -145,7 +57,7 @@ local_data_provider <- function(cache_dir) {
 }
 
 #' @rdname datenbaecker
-#' @param host
+#' @param host URL to the remote data provider
 #' @export
 remote_data_provider <- function(host, cache_dir = NULL) {
   if (is.null(cache_dir)) {
@@ -154,9 +66,12 @@ remote_data_provider <- function(host, cache_dir = NULL) {
     } else if (ask_cache_data()) {
       cache_dir <- create_default_cache()
     }
+  } else if (is.logical(cache_dir) && cache_dir) {
+    cache_dir <- create_default_cache()
   }
   data_cache <- InMemoryCache$new()
-  if (!is.null(cache_dir)) {
+  create_file_cache <- is.character(cache_dir) || (is.logical(cache_dir) && cache_dir)
+  if (create_file_cache) {
     data_cache <- FileCache$new(cache_dir)
   }
   list(cache = data_cache, host = host) %>%
@@ -164,10 +79,12 @@ remote_data_provider <- function(host, cache_dir = NULL) {
 }
 
 create_default_data_provider <- function() {
-  default_provider <- datenbaecker()
+  default_provider <- NULL
   function(dp = NULL) {
     if (!is.null(dp)) {
       default_provider <<- dp
+    } else if(is.null(default_provider)) {
+      default_provider <<- datenbaecker()
     }
     default_provider
   }
@@ -191,11 +108,17 @@ download_datacake <- function(dp, what) {
   readRDS(file_conn)
 }
 
-#' Get data
+#' Get Data from a Data Provider
 #'
-#' @param dp
-#' @param what
-#' @param ...
+#' @param dp An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})
+#' @param what Name of the data source
+#' @param ... Further parameter (currently not used)
+#'
+#' @description Depending on the type of \code{data_provider} and the settings,
+#' \code{serve} might return cached data from memory or disk.
+#' If the data does not exist locally, a \code{remote_data_provider} might download the
+#' data from the internet and saves is to the cache folder on the disk depending
+#' on the settings (see \code{\link[datacake]{datenbaecker}}).
 #'
 #' @return The requested data
 #' @export
@@ -219,19 +142,68 @@ serve.remote_data_provider <- function(what, dp) {
   dt
 }
 
-menu <- function() {
-  UseMethod("menu", dp)
+
+#' @title Get Labels and ID for Entities
+#'
+#' @param dp An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})
+#'
+#' @return A \code{data.frame} with columns \code{id} and \code{label} containing the
+#' identifiers and labels from the office of federal statistics.
+#' \code{get_statistical_units} returns all entities and has an additional column
+#' \code{entity} to identify the type of entity.
+#'
+#' @references The source of the data is the swissBOUNDARIES3D dataset from
+#' the Federal Office of Topography swisstopo:
+#' \url{https://www.swisstopo.admin.ch/de/geodata/landscape/boundaries3d.html}
+#'
+#' @importFrom tibble remove_rownames
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' dp <- datenbaecker()
+#' cantons <- get_cantonal(entities)
+#' communes <- get_communal_entities()
+#' }
+get_statistical_entities <- function(dp) {
+  ct <- get_cantonal_entites(dp) %>%
+    mutate(entity = "canton")
+  get_communal_entities(dp) %>%
+    mutate(entity = "commune")
+  bind_rows(ct, cm) %>%
+    remove_rownames()
 }
 
-ask <- function(dp, about, considering = c("license")) {
-
+#' @rdname get_statistical_entities
+#' @export
+get_cantonal_entites <- function(dp) {
+  sb <- serve("swiss_boundaries", dp)
+  sb %>%
+    filter(entity == "canton") %>%
+    select(bfs_num, label) %>%
+    arrange(bfs_num) %>%
+    rename(id = bfs_num) %>%
+    unique() %>%
+    remove_rownames()
 }
 
-# db <- datenbaecker()
-# dp_local <- local_data_provider("path/to/folder")
-# swiss_boundaries <- serve("swiss_boundaries", db)
+#' @rdname get_statistical_entities
+#' @export
+get_communal_entites <- function(dp) {
+  sb <- serve("swiss_boundaries", dp)
+  sb %>%
+    filter(entity == "commune") %>%
+    select(bfs_num, label) %>%
+    arrange(bfs_num) %>%
+    rename(id = bfs_num) %>%
+    unique() %>%
+    remove_rownames()
+}
 
-# serve("swiss_boundaries", dp_local) %>%
-#   filter(entity == "canton") %>%
-#   ggplot(aes(id = label)) +
-#   geom_canton(data_provider = dp_local)
+# menu <- function() {
+#   UseMethod("menu", dp)
+# }
+#
+# ask <- function(dp, about, considering = c("license")) {
+#
+# }

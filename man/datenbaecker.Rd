@@ -16,9 +16,15 @@ remote_data_provider(host, cache_dir = NULL)
 default_data_provider(dp = NULL)
 }
 \arguments{
-\item{cache_dir}{}
+\item{cache_dir}{\code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
+The program asks if data should be saved to disk if the argument is \code{NULL}.}
+
+\item{host}{URL to the remote data provider}
 
 \item{dp}{Data provider that should act as default provider. Default is \code{datenbaecker()}.}
+}
+\value{
+An object of type \code{data_provider}
 }
 \description{
 Create Data Provider

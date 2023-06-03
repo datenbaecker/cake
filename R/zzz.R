@@ -6,5 +6,5 @@
 #' @importFrom httr GET
 #' @importFrom httr content
 .onAttach <- function(libname, pkgname) {
-  print_logo()
+
 }

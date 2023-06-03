@@ -42,18 +42,14 @@ StatBoundary <- ggplot2::ggproto(
 #'
 #' @param mapping Set of aesthetic mappings created by \code{\link[ggplot2]{aes}}.
 #' @param data Data with the units for plotting
-#' @param data_provider A datacake data provider.
-#' @param position
-#' @param ...
-#' @param na.rm
-#' @param show.legend
-#' @param inherit.aes
+#' @param data_provider A datacake data provider. Default is \code{\link[datacake]{default_data_provider}}.
+#' @inheritParams ggplot2::geom_polygon
 #' @param gov_level Goverment level (either \dQuote{commune} or \dQuote{canton})
 #'
 #' @section Aesthetics:
 #' The only required aesthetics is \code{id} and should contain the
 #' identification for the geographical unit (canton or commune).
-#' If the column is numeric, the values get interpreted as
+#' If the column is \code{numeric}, the values get interpreted as commune
 #' or canton number according to the definition of the Swiss
 #' Federal Statistical Office (see \url{https://www.bfs.admin.ch/bfs/de/home/grundlagen/agvch/identifikatoren-gemeinde.html}).
 #' Otherwise the column gets interpreted as commune name or
@@ -68,7 +64,6 @@ StatBoundary <- ggplot2::ggproto(
 #'   geom_canton() +
 #'   geom_commune(data = tibble(label = c("Luzern", "Zürich", "Zug")), fill = "white", color = "darkgrey")
 #' }
-#'
 #'
 #' @export
 #'
