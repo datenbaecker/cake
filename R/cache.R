@@ -21,9 +21,9 @@ InMemoryCache <- R6::R6Class(
       name %in% names(private$cached_data)
     },
     add = function(obj, name, overwrite = FALSE) {
-      message("adding to cache")
+      # message("adding to cache")
       if (!self$exists_in_memory(name) || overwrite) {
-        message("add...")
+        # message("add...")
         idx <- private$get_empty_slot()
         if (idx > length(private$cached_data)) {
           stop("max data cache size reached")
@@ -57,7 +57,7 @@ FileCache <- R6::R6Class(
     get = function(name) {
       dt <- super$get(name)
       if (is.null(dt) && self$exists(name)) {
-        message("loading file")
+        # message("loading file")
         dt <- private$load_file(name)
         super$add(dt, name)
       }

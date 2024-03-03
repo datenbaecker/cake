@@ -95,7 +95,7 @@ create_default_data_provider <- function() {
 #' @export
 default_data_provider <- create_default_data_provider()
 
-abort_if_wrong_class <- function(expect_cls) {
+abort_if_wrong_class <- function(dp, expect_cls) {
   if (!inherits(dp, expect_cls)) {
     datacake_abort_class(expect_cls, dp)
   }
@@ -117,20 +117,20 @@ extract_qs_response <- function(res) {
 }
 
 download_datacake <- function(dp, what, read_body_hook = identity) {
-  abort_if_wrong_class("remote_data_provider")
+  abort_if_wrong_class(dp, "remote_data_provider")
   url <- file.path(dp$host, what)
-  print(url)
+  datacake_alert_info("downloading")
   res <- request(url) %>%
     req_perform()
   read_body_hook(res)
 }
 
-order_datacake <- function(dp, what, read_body_hook = identity, ...) {
-  abort_if_wrong_class("remote_data_provider")
-  # res <- request(url) %>%
-
-
-}
+# order_datacake <- function(dp, what, read_body_hook = identity, ...) {
+#   abort_if_wrong_class(dp, "remote_data_provider")
+#   # res <- request(url) %>%
+#
+#
+# }
 
 #' Get Data from a Data Provider
 #'

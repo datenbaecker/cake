@@ -36,6 +36,10 @@ get_datacake_msg <- function(what) {
       "en" = "Directory {.path {cache_data_path}} does not exist.",
       "de" = "Das Verzeichnis {.path {cache_data_path}} existiert nicht."
     ),
+    downloading = c(
+      "en" = "Downloading data, this takes a while...",
+      "de" = "Daten werden heruntergeladen. Dieser Vorgang dauert eine Weile..."
+    ),
     not_in_menu = c(
       "en" = "Value for {.arg what} or {.arg flavor} is invalid. Check {.code menu} for data catalog.",
       "de" = "Wert für {.arg what} oder {.arg flavor} ist nicht gültig. Siehe {.code menu} für Datenkatalog."
