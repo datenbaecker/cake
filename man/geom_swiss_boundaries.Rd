@@ -4,6 +4,7 @@
 \alias{geom_swiss_boundaries}
 \alias{geom_canton}
 \alias{geom_commune}
+\alias{geom_plz}
 \title{Plot Swiss Boundaries}
 \usage{
 geom_swiss_boundaries(
@@ -15,7 +16,7 @@ geom_swiss_boundaries(
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE,
-  gov_level = c("canton", "commune")
+  gov_level = c("canton", "commune", "plz")
 )
 
 geom_canton(
@@ -30,6 +31,17 @@ geom_canton(
 )
 
 geom_commune(
+  mapping = NULL,
+  data = NULL,
+  data_provider = default_data_provider(),
+  position = "identity",
+  ...,
+  na.rm = FALSE,
+  show.legend = NA,
+  inherit.aes = TRUE
+)
+
+geom_plz(
   mapping = NULL,
   data = NULL,
   data_provider = default_data_provider(),

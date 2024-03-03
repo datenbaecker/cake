@@ -41,10 +41,10 @@ create_default_cache <- function() {
 #' @return An object of type \code{data_provider}
 #' @export
 #'
-datenbaecker <- function(cache_dir = NULL) {
+datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
   print_logo()
-  baecker_url <- "https://datacake.datenbaecker.ch"
-  dp <- remote_data_provider(baecker_url, cache_dir)
+  baecker_url <- Sys.getenv("DATACAKE_URL", unset = "https://datacake.datenbaecker.ch")
+  dp <- remote_data_provider(baecker_url, cache_dir, auth_info)
   dp
 }
 
@@ -59,7 +59,7 @@ local_data_provider <- function(cache_dir) {
 #' @rdname datenbaecker
 #' @param host URL to the remote data provider
 #' @export
-remote_data_provider <- function(host, cache_dir = NULL) {
+remote_data_provider <- function(host, cache_dir = NULL, auth_info = NULL) {
   if (is.null(cache_dir)) {
     if (exists_default_cache()) {
       cache_dir <- get_default_cache()
@@ -74,7 +74,7 @@ remote_data_provider <- function(host, cache_dir = NULL) {
   if (create_file_cache) {
     data_cache <- FileCache$new(cache_dir)
   }
-  list(cache = data_cache, host = host) %>%
+  list(cache = data_cache, host = host, auth_info = auth_info) %>%
     structure(class = c("remote_data_provider", "data_provider"))
 }
 
@@ -95,17 +95,41 @@ create_default_data_provider <- function() {
 #' @export
 default_data_provider <- create_default_data_provider()
 
-download_datacake <- function(dp, what) {
-  expect_cls <- "remote_data_provider"
+abort_if_wrong_class <- function(expect_cls) {
   if (!inherits(dp, expect_cls)) {
     datacake_abort_class(expect_cls, dp)
   }
-  url <- file.path(dp$host, paste0(what, ".rds"))
-  res <- httr::GET(url)
-  file_conn <- httr::content(res) %>%
+}
+
+
+extract_swiss_boundaries <- function(res) {
+  file_conn <- resp_body_raw(res) %>%
     rawConnection() %>%
     gzcon()
   readRDS(file_conn)
+}
+
+extract_qs_response <- function(res) {
+  obj <- resp_body_raw(res)
+  file_path <- tempfile(fileext = "qs")
+  writeBin(obj, file_path)
+  qread(file_path)
+}
+
+download_datacake <- function(dp, what, read_body_hook = identity) {
+  abort_if_wrong_class("remote_data_provider")
+  url <- file.path(dp$host, what)
+  print(url)
+  res <- request(url) %>%
+    req_perform()
+  read_body_hook(res)
+}
+
+order_datacake <- function(dp, what, read_body_hook = identity, ...) {
+  abort_if_wrong_class("remote_data_provider")
+  # res <- request(url) %>%
+
+
 }
 
 #' Get Data from a Data Provider
@@ -128,15 +152,15 @@ serve <- function(what, dp, ...) {
 }
 
 #' @export
-serve.local_data_provider <- function(what, dp) {
+serve.local_data_provider <- function(what, dp, ...) {
   dp$cache$get(what)
 }
 
 #' @export
-serve.remote_data_provider <- function(what, dp) {
+serve.remote_data_provider <- function(what, dp, read_body_hook = identity) {
   dt <- dp$cache$get(what)
   if (is.null(dt)) {
-    dt <- download_datacake(dp, what)
+    dt <- download_datacake(dp, what, read_body_hook = read_body_hook)
     dp$cache$add(dt, what)
   }
   dt
@@ -177,7 +201,7 @@ get_statistical_entities <- function(dp) {
 #' @rdname get_statistical_entities
 #' @export
 get_cantonal_entites <- function(dp) {
-  sb <- serve("swiss_boundaries", dp)
+  sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
   sb %>%
     filter(entity == "canton") %>%
     select(bfs_num, label) %>%
@@ -187,10 +211,14 @@ get_cantonal_entites <- function(dp) {
     remove_rownames()
 }
 
+get_plz_entites <- function(dp) {
+  sb <- serve("")
+}
+
 #' @rdname get_statistical_entities
 #' @export
 get_communal_entites <- function(dp) {
-  sb <- serve("swiss_boundaries", dp)
+  sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
   sb %>%
     filter(entity == "commune") %>%
     select(bfs_num, label) %>%

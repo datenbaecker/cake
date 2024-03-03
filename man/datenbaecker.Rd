@@ -7,11 +7,11 @@
 \alias{default_data_provider}
 \title{Create Data Provider}
 \usage{
-datenbaecker(cache_dir = NULL)
+datenbaecker(cache_dir = NULL, auth_info = NULL)
 
 local_data_provider(cache_dir)
 
-remote_data_provider(host, cache_dir = NULL)
+remote_data_provider(host, cache_dir = NULL, auth_info = NULL)
 
 default_data_provider(dp = NULL)
 }

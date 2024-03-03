@@ -77,15 +77,19 @@ FileCache <- R6::R6Class(
   private = list(
     cache_dir = NULL,
     get_filepath = function(name) {
-      file.path(private$cache_dir, paste0(name, ".rds"))
+      file.path(private$cache_dir, paste0(name, ".qs"))
     },
     load_file = function(name) {
       file_path <- private$get_filepath(name)
-      readRDS(file_path)
+      qread(file_path)
     },
     save_file = function(obj, name) {
       file_path <- private$get_filepath(name)
-      saveRDS(obj, file_path)
+      dir_name <- dirname(file_path)
+      if (!dir.exists(dir_name)) {
+        dir.create(dir_name, recursive = TRUE)
+      }
+      qsave(obj, file_path)
     }
   )
 )
