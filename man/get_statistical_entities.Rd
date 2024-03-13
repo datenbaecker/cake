@@ -3,14 +3,17 @@
 \name{get_statistical_entities}
 \alias{get_statistical_entities}
 \alias{get_cantonal_entites}
+\alias{get_plz_entites}
 \alias{get_communal_entites}
 \title{Get Labels and ID for Entities}
 \usage{
-get_statistical_entities(dp)
+get_statistical_entities(dp = default_data_provider())
 
-get_cantonal_entites(dp)
+get_cantonal_entites(dp = default_data_provider())
 
-get_communal_entites(dp)
+get_plz_entites(dp = default_data_provider())
+
+get_communal_entites(dp = default_data_provider())
 }
 \arguments{
 \item{dp}{An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})}

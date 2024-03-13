@@ -45,6 +45,12 @@ datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
   print_logo()
   baecker_url <- Sys.getenv("DATACAKE_URL", unset = "https://datacake.datenbaecker.ch")
   dp <- remote_data_provider(baecker_url, cache_dir, auth_info)
+  news <- serve("news", dp) %>%
+    resp_body_json()
+  if (news != "") {
+    cli_text("\n")
+    cli_text(news)
+  }
   dp
 }
 
@@ -189,7 +195,7 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity) {
 #' cantons <- get_cantonal(entities)
 #' communes <- get_communal_entities()
 #' }
-get_statistical_entities <- function(dp) {
+get_statistical_entities <- function(dp = default_data_provider()) {
   ct <- get_cantonal_entites(dp) %>%
     mutate(entity = "canton")
   get_communal_entities(dp) %>%
@@ -200,7 +206,7 @@ get_statistical_entities <- function(dp) {
 
 #' @rdname get_statistical_entities
 #' @export
-get_cantonal_entites <- function(dp) {
+get_cantonal_entites <- function(dp = default_data_provider()) {
   sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
   sb %>%
     filter(entity == "canton") %>%
@@ -211,13 +217,18 @@ get_cantonal_entites <- function(dp) {
     remove_rownames()
 }
 
-get_plz_entites <- function(dp) {
-  sb <- serve("")
+#' @rdname get_statistical_entities
+#' @export
+get_plz_entites <- function(dp = default_data_provider()) {
+  sb <- serve("geometries/plz", dp, read_body_hook = extract_qs_response)
+  sb %>%
+    select(id, plz) %>%
+    unique()
 }
 
 #' @rdname get_statistical_entities
 #' @export
-get_communal_entites <- function(dp) {
+get_communal_entites <- function(dp = default_data_provider()) {
   sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
   sb %>%
     filter(entity == "commune") %>%

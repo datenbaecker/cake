@@ -140,11 +140,14 @@ geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_da
 #' @rdname geom_swiss_boundaries
 #' @export
 geom_plz <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
-                     na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+                     na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, geometry_type = c("polygon", "point")) {
+  geometry_type <- match.arg(geometry_type)
+  id <- if_else(geometry_type == "polygon", "geometries/plz", "geometries/plz-points")
+  legend <- if_else(is.na(show.legend) && geometry_type == "point", FALSE, NA)
   c(
     layer(data = data, mapping = mapping, stat = "wkt", geom = "sf",
-        position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, data_provider = data_provider, product = "geometries/plz", read_body_hook = extract_qs_response, ...)),
+        position = position, show.legend = legend, inherit.aes = inherit.aes,
+        params = list(na.rm = na.rm, data_provider = data_provider, product = id, read_body_hook = extract_qs_response, ...)),
     coord_sf(default = TRUE, default_crs = 2056)
   )
 }

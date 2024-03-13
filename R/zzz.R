@@ -6,6 +6,7 @@
 #' @importFrom httr2 request
 #' @importFrom httr2 req_perform
 #' @importFrom httr2 resp_body_raw
+#' @importFrom httr2 resp_body_json
 #' @importFrom qs qread
 #' @importFrom qs qsave
 #' @importFrom sf st_as_sf
