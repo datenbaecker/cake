@@ -1,6 +1,14 @@
 
 StatWkt <- ggplot2::ggproto(
   "StatWkt", ggplot2::Stat,
+  compute_layer = function(self, data, params, layout) {
+    # This is necessary because of a bug in ggplot2 <= 3.4.1
+    # see issue 4284 https://github.com/tidyverse/ggplot2/issues/4284
+    if ("id" %in% names(data) && !is.numeric(data[["id"]])) {
+      data[["id"]] <- as.factor(data[["id"]])
+    }
+    ggplot2::ggproto_parent(ggplot2::Stat, self)$compute_layer(data, params, layout)
+  },
   compute_panel = function(data, scales, data_provider = NULL, product = "geometries/plz", read_body_hook = identity) {
     if (is.null(data_provider)) {
       datacake_abort("dataprovider_required")
