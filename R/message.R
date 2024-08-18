@@ -16,6 +16,10 @@ get_lang <- function() {
 get_datacake_msg <- function(what) {
   lang <- get_lang()
   msg <- list(
+    delete_cache_data = c(
+      "en" = "{.strong This command deletes all data in {.path {cache_data_path}}. Do you wish to continue (y/n)?}",
+      "de" = "{.strong Dieser Befehl löscht sämtliche Daten in {.path {cache_data_path}}. Willst du fortfahren (j/n)?}"
+    ),
     cache_data = c(
       "en" = "{.strong Would you like to save the data on your disc? (y/n)}",
       "de" = "{.strong Möchtest du die Daten lokal speichern? (j/n)}"

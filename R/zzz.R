@@ -13,6 +13,7 @@
 #' @importFrom sf st_crs
 #' @importFrom sf "st_crs<-"
 #' @importFrom sf st_bbox
+#' @importFrom arrow read_parquet
 .onAttach <- function(libname, pkgname) {
 
 }

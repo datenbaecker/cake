@@ -1,4 +1,18 @@
 
+ask_delete_cache <- function(cache_dir) {
+  cli::cli_div(theme = cli_theme())
+  datacake_alert("delete_cache_data", cache_data_path = cache_dir)
+  repeat {
+    answer <- readline() %>%
+      tolower()
+    if (answer %in% c("j", "n", "y")) {
+      break
+    }
+    datacake_alert("delete_cache_data", cache_data_path = cache_dir)
+  }
+  c("j" = TRUE, "n" = FALSE, "y" = TRUE)[answer]
+}
+
 ask_cache_data <- function() {
   cli::cli_div(theme = cli_theme())
   datacake_alert_info("info_cache_data")
@@ -33,6 +47,20 @@ create_default_cache <- function() {
   cache_data_path
 }
 
+#' @export
+clean_cache <- function(data_provider) {
+  cache <- data_provider$cache
+  if (inherits(cache, "FileCache")) {
+    cache_dir <- cache$cache_directory()
+    del_cache <- ask_delete_cache(cache_dir)
+    if (del_cache) {
+      cache$clean_cache()
+    }
+  } else {
+    cache$clean_cache()
+  }
+}
+
 #' @title Create Data Provider
 #'
 #' @param cache_dir \code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
@@ -43,9 +71,9 @@ create_default_cache <- function() {
 #'
 datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
   print_logo()
-  baecker_url <- Sys.getenv("DATACAKE_URL", unset = "https://datacake.datenbaecker.ch")
-  dp <- remote_data_provider(baecker_url, cache_dir, auth_info)
-  news <- serve("news", dp) %>%
+  baecker_url <- Sys.getenv("DATACAKE_URL", unset = "https://datacake.datenbaecker.ch/api")
+  dp <- remote_data_provider(baecker_url, cache_dir, auth_info, "v1/")
+  news <- serve("news", dp, alert_download = FALSE) %>%
     resp_body_json()
   if (news != "") {
     cli_text("\n")
@@ -65,7 +93,7 @@ local_data_provider <- function(cache_dir) {
 #' @rdname datenbaecker
 #' @param host URL to the remote data provider
 #' @export
-remote_data_provider <- function(host, cache_dir = NULL, auth_info = NULL) {
+remote_data_provider <- function(host, cache_dir = NULL, auth_info = NULL, api_version_prefix = "") {
   if (is.null(cache_dir)) {
     if (exists_default_cache()) {
       cache_dir <- get_default_cache()
@@ -80,7 +108,7 @@ remote_data_provider <- function(host, cache_dir = NULL, auth_info = NULL) {
   if (create_file_cache) {
     data_cache <- FileCache$new(cache_dir)
   }
-  list(cache = data_cache, host = host, auth_info = auth_info) %>%
+  list(cache = data_cache, host = host, api_version_prefix = api_version_prefix, auth_info = auth_info) %>%
     structure(class = c("remote_data_provider", "data_provider"))
 }
 
@@ -122,10 +150,22 @@ extract_qs_response <- function(res) {
   qread(file_path)
 }
 
-download_datacake <- function(dp, what, read_body_hook = identity) {
+extract_parquet_response <- function(res) {
+  file_conn <- resp_body_raw(res) %>%
+    rawConnection()
+  # file_path <- tempfile(fileext = "parquet")
+  # writeBin(obj, file_path)
+  # read_parquet(file_path)
+  read_parquet(file_conn)
+}
+
+download_datacake <- function(dp, what, read_body_hook = identity, alert_download = TRUE) {
   abort_if_wrong_class(dp, "remote_data_provider")
   url <- file.path(dp$host, what)
-  datacake_alert_info("downloading")
+  print_debug(sprintf("downloading from %s", url))
+  if (alert_download) {
+    datacake_alert_info("downloading")
+  }
   res <- request(url) %>%
     req_perform()
   read_body_hook(res)
@@ -137,6 +177,23 @@ download_datacake <- function(dp, what, read_body_hook = identity) {
 #
 #
 # }
+
+set_log_level <- function(log_level="prod") {
+  function(new_level = NULL) {
+    if (!is.null(new_level)) {
+      log_level <<- match.arg(new_level, choices = c("prod", "debug"))
+    }
+    log_level
+  }
+}
+
+log_level <- set_log_level()
+
+print_debug <- function(...) {
+  if (log_level() == "debug") {
+    print(...)
+  }
+}
 
 #' Get Data from a Data Provider
 #'
@@ -163,10 +220,11 @@ serve.local_data_provider <- function(what, dp, ...) {
 }
 
 #' @export
-serve.remote_data_provider <- function(what, dp, read_body_hook = identity) {
+serve.remote_data_provider <- function(what, dp, read_body_hook = identity, alert_download = TRUE) {
+  what <- paste0(dp$api_version_prefix, what)
   dt <- dp$cache$get(what)
   if (is.null(dt)) {
-    dt <- download_datacake(dp, what, read_body_hook = read_body_hook)
+    dt <- download_datacake(dp, what, read_body_hook = read_body_hook, alert_download = alert_download)
     dp$cache$add(dt, what)
   }
   dt
@@ -220,9 +278,9 @@ get_cantonal_entites <- function(dp = default_data_provider()) {
 #' @rdname get_statistical_entities
 #' @export
 get_plz_entites <- function(dp = default_data_provider()) {
-  sb <- serve("geometries/plz", dp, read_body_hook = extract_qs_response)
+  sb <- serve("geometries/plz-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    select(id, plz) %>%
+    select(zip_id, plz) %>%
     unique()
 }
 

@@ -11,7 +11,12 @@ datenbaecker(cache_dir = NULL, auth_info = NULL)
 
 local_data_provider(cache_dir)
 
-remote_data_provider(host, cache_dir = NULL, auth_info = NULL)
+remote_data_provider(
+  host,
+  cache_dir = NULL,
+  auth_info = NULL,
+  api_version_prefix = ""
+)
 
 default_data_provider(dp = NULL)
 }
