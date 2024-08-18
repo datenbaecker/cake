@@ -153,9 +153,6 @@ extract_qs_response <- function(res) {
 extract_parquet_response <- function(res) {
   file_conn <- resp_body_raw(res) %>%
     rawConnection()
-  # file_path <- tempfile(fileext = "parquet")
-  # writeBin(obj, file_path)
-  # read_parquet(file_path)
   read_parquet(file_conn)
 }
 
@@ -265,14 +262,10 @@ get_statistical_entities <- function(dp = default_data_provider()) {
 #' @rdname get_statistical_entities
 #' @export
 get_cantonal_entites <- function(dp = default_data_provider()) {
-  sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
+  sb <- serve("geometries/cantons-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    filter(entity == "canton") %>%
-    select(bfs_num, label) %>%
-    arrange(bfs_num) %>%
-    rename(id = bfs_num) %>%
-    unique() %>%
-    remove_rownames()
+    select(bfs_num, label, name) %>%
+    arrange(bfs_num)
 }
 
 #' @rdname get_statistical_entities
@@ -281,16 +274,16 @@ get_plz_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/plz-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
     select(zip_id, plz) %>%
-    unique()
+    unique() %>%
+    remove_rownames()
 }
 
 #' @rdname get_statistical_entities
 #' @export
 get_communal_entites <- function(dp = default_data_provider()) {
-  sb <- serve("swiss_boundaries.rds", dp, read_body_hook = extract_swiss_boundaries)
+  sb <- serve("geometries/communes-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    filter(entity == "commune") %>%
-    select(bfs_num, label) %>%
+    select(bfs_num, name, kanton_label) %>%
     arrange(bfs_num) %>%
     rename(id = bfs_num) %>%
     unique() %>%
