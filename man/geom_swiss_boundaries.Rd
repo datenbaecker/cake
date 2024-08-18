@@ -58,7 +58,7 @@ geom_plz(
 
 \item{data}{Data with the units for plotting}
 
-\item{data_provider}{A datacake data provider. Default is \code{\link[datacake]{default_data_provider}}.}
+\item{data_provider}{A cake data provider. Default is \code{\link[cake]{default_data_provider}}.}
 
 \item{position}{A position adjustment to use on the data for this layer. This
 can be used in various ways, including to prevent overplotting and

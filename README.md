@@ -7,7 +7,7 @@ example_frame <- data.frame(
 ```
 
 ```r
-library(datacake)
+library(cake)
 
 ggplot(example_frame, aes(id = kantone, fill = kunden)) +
     geom_canton(data_provider = datenbaecker())

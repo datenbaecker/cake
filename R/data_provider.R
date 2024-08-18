@@ -1,36 +1,36 @@
 
 ask_delete_cache <- function(cache_dir) {
   cli::cli_div(theme = cli_theme())
-  datacake_alert("delete_cache_data", cache_data_path = cache_dir)
+  cake_alert("delete_cache_data", cache_data_path = cache_dir)
   repeat {
     answer <- readline() %>%
       tolower()
     if (answer %in% c("j", "n", "y")) {
       break
     }
-    datacake_alert("delete_cache_data", cache_data_path = cache_dir)
+    cake_alert("delete_cache_data", cache_data_path = cache_dir)
   }
   c("j" = TRUE, "n" = FALSE, "y" = TRUE)[answer]
 }
 
 ask_cache_data <- function() {
   cli::cli_div(theme = cli_theme())
-  datacake_alert_info("info_cache_data")
-  datacake_alert("cache_data")
+  cake_alert_info("info_cache_data")
+  cake_alert("cache_data")
   repeat {
     answer <- readline() %>%
       tolower()
     if (answer %in% c("j", "n", "y")) {
       break
     }
-    datacake_alert("cache_data")
+    cake_alert("cache_data")
   }
   c("j" = TRUE, "n" = FALSE, "y" = TRUE)[answer]
 }
 
 get_default_cache <- function() {
   rappdirs::user_cache_dir() %>%
-    file.path("datacake") %>%
+    file.path("cake") %>%
     normalizePath(mustWork = FALSE)
 }
 
@@ -71,7 +71,7 @@ clean_cache <- function(data_provider) {
 #'
 datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
   print_logo()
-  baecker_url <- Sys.getenv("DATACAKE_URL", unset = "https://datacake.datenbaecker.ch/api")
+  baecker_url <- Sys.getenv("CAKE_URL", unset = "https://datacake.datenbaecker.ch/api")
   dp <- remote_data_provider(baecker_url, cache_dir, auth_info, "v1/")
   news <- serve("news", dp, alert_download = FALSE) %>%
     resp_body_json()
@@ -131,7 +131,7 @@ default_data_provider <- create_default_data_provider()
 
 abort_if_wrong_class <- function(dp, expect_cls) {
   if (!inherits(dp, expect_cls)) {
-    datacake_abort_class(expect_cls, dp)
+    cake_abort_class(expect_cls, dp)
   }
 }
 
@@ -156,24 +156,17 @@ extract_parquet_response <- function(res) {
   read_parquet(file_conn)
 }
 
-download_datacake <- function(dp, what, read_body_hook = identity, alert_download = TRUE) {
+download_cake <- function(dp, what, read_body_hook = identity, alert_download = TRUE) {
   abort_if_wrong_class(dp, "remote_data_provider")
   url <- file.path(dp$host, what)
   print_debug(sprintf("downloading from %s", url))
   if (alert_download) {
-    datacake_alert_info("downloading")
+    cake_alert_info("downloading")
   }
   res <- request(url) %>%
     req_perform()
   read_body_hook(res)
 }
-
-# order_datacake <- function(dp, what, read_body_hook = identity, ...) {
-#   abort_if_wrong_class(dp, "remote_data_provider")
-#   # res <- request(url) %>%
-#
-#
-# }
 
 set_log_level <- function(log_level="prod") {
   function(new_level = NULL) {
@@ -194,7 +187,7 @@ print_debug <- function(...) {
 
 #' Get Data from a Data Provider
 #'
-#' @param dp An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})
+#' @param dp An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})
 #' @param what Name of the data source
 #' @param ... Further parameter (currently not used)
 #'
@@ -202,7 +195,7 @@ print_debug <- function(...) {
 #' \code{serve} might return cached data from memory or disk.
 #' If the data does not exist locally, a \code{remote_data_provider} might download the
 #' data from the internet and saves is to the cache folder on the disk depending
-#' on the settings (see \code{\link[datacake]{datenbaecker}}).
+#' on the settings (see \code{\link[cake]{datenbaecker}}).
 #'
 #' @return The requested data
 #' @export
@@ -221,7 +214,7 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity, aler
   what <- paste0(dp$api_version_prefix, what)
   dt <- dp$cache$get(what)
   if (is.null(dt)) {
-    dt <- download_datacake(dp, what, read_body_hook = read_body_hook, alert_download = alert_download)
+    dt <- download_cake(dp, what, read_body_hook = read_body_hook, alert_download = alert_download)
     dp$cache$add(dt, what)
   }
   dt
@@ -230,7 +223,7 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity, aler
 
 #' @title Get Labels and ID for Entities
 #'
-#' @param dp An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})
+#' @param dp An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})
 #'
 #' @return A \code{data.frame} with columns \code{id} and \code{label} containing the
 #' identifiers and labels from the office of federal statistics.
@@ -265,7 +258,8 @@ get_cantonal_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/cantons-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
     select(bfs_num, label, name) %>%
-    arrange(bfs_num)
+    arrange(bfs_num) %>%
+    rename(id = bfs_num)
 }
 
 #' @rdname get_statistical_entities
@@ -273,8 +267,10 @@ get_cantonal_entites <- function(dp = default_data_provider()) {
 get_plz_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/plz-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    select(zip_id, plz) %>%
+    select(plz) %>%
     unique() %>%
+    mutate(id = plz) %>%
+    select(id, plz) %>%
     remove_rownames()
 }
 
