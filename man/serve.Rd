@@ -9,7 +9,7 @@ serve(what, dp, ...)
 \arguments{
 \item{what}{Name of the data source}
 
-\item{dp}{An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})}
+\item{dp}{An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})}
 
 \item{...}{Further parameter (currently not used)}
 }
@@ -21,5 +21,5 @@ Depending on the type of \code{data_provider} and the settings,
 \code{serve} might return cached data from memory or disk.
 If the data does not exist locally, a \code{remote_data_provider} might download the
 data from the internet and saves is to the cache folder on the disk depending
-on the settings (see \code{\link[datacake]{datenbaecker}}).
+on the settings (see \code{\link[cake]{datenbaecker}}).
 }

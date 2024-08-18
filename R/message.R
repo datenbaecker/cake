@@ -13,7 +13,7 @@ get_lang <- function() {
   lang
 }
 
-get_datacake_msg <- function(what) {
+get_cake_msg <- function(what) {
   lang <- get_lang()
   msg <- list(
     delete_cache_data = c(
@@ -25,10 +25,10 @@ get_datacake_msg <- function(what) {
       "de" = "{.strong Möchtest du die Daten lokal speichern? (j/n)}"
     ),
     info_cache_data = c(
-      "en" = "{.pkg datacake} may save the data on your local disc.
+      "en" = "{.pkg cake} may save the data on your local disc.
         This speeds up data loading in subsequent R session.
         Specify {.arg cache_data} if you don't want to answer this question in future calls.",
-       "de" = "{.pkg datacake} kann die Daten auf deiner lokalen Festplatte speichern.
+       "de" = "{.pkg cake} kann die Daten auf deiner lokalen Festplatte speichern.
         Das beschleunigt das Laden der Daten in zukünftigen R-Sessions.
         Spezifiziere {.arg cache_data} falls du diese Frage zukünftig nicht mehr erhalten möchtest."
     ),
@@ -62,27 +62,27 @@ get_datacake_msg <- function(what) {
   rel_msg[lang]
 }
 
-datacake_abort <- function(err, ...) {
+cake_abort <- function(err, ...) {
   with(list(...), {
-    get_datacake_msg(err) %>%
+    get_cake_msg(err) %>%
       cli::cli_abort()
   })
 }
 
-datacake_abort_class <- function(expected, arg) {
-  datacake_abort("abort_class", expected = expected, argument = deparse(substitute(arg)))
+cake_abort_class <- function(expected, arg) {
+  cake_abort("abort_class", expected = expected, argument = deparse(substitute(arg)))
 }
 
-datacake_alert <- function(msg, ...) {
+cake_alert <- function(msg, ...) {
   with(list(...), {
-    get_datacake_msg(msg) %>%
+    get_cake_msg(msg) %>%
       cli::cli_alert()
   })
 }
 
-datacake_alert_info <- function(msg, ...) {
+cake_alert_info <- function(msg, ...) {
   with(list(...), {
-    get_datacake_msg(msg) %>%
+    get_cake_msg(msg) %>%
       cli::cli_alert_info()
   })
 }

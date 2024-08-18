@@ -16,7 +16,7 @@ get_plz_entites(dp = default_data_provider())
 get_communal_entites(dp = default_data_provider())
 }
 \arguments{
-\item{dp}{An object of type \code{data_provider} (see \code{\link[datacake]{datenbaecker}})}
+\item{dp}{An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})}
 }
 \value{
 A \code{data.frame} with columns \code{id} and \code{label} containing the

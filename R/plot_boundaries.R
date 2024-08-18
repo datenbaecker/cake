@@ -11,7 +11,7 @@ StatWkt <- ggplot2::ggproto(
   },
   compute_panel = function(data, scales, data_provider = NULL, product = "geometries/plz-shape", read_body_hook = identity, col_name_wkt = "shape_wkt", id_col = "id") {
     if (is.null(data_provider)) {
-      datacake_abort("dataprovider_required")
+      cake_abort("dataprovider_required")
     }
     cols_to_keep <- setdiff(names(data), c("geometry"))
     data_keep <- data[, cols_to_keep] %>%
@@ -64,7 +64,7 @@ StatBoundary <- ggplot2::ggproto(
   },
   compute_panel = function(data, scales, data_provider = NULL, gov_level = "canton") {
     if (is.null(data_provider)) {
-      datacake_abort("dataprovider_required")
+      cake_abort("dataprovider_required")
     }
     cols_to_keep <- setdiff(names(data), c("x", "y", "group", "subgroup"))
     data_keep <- data[, cols_to_keep] %>%
@@ -95,7 +95,7 @@ StatBoundary <- ggplot2::ggproto(
 #'
 #' @param mapping Set of aesthetic mappings created by \code{\link[ggplot2]{aes}}.
 #' @param data Data with the units for plotting
-#' @param data_provider A datacake data provider. Default is \code{\link[datacake]{default_data_provider}}.
+#' @param data_provider A cake data provider. Default is \code{\link[cake]{default_data_provider}}.
 #' @inheritParams ggplot2::geom_polygon
 #' @param gov_level Goverment level (either \dQuote{commune} or \dQuote{canton})
 #'
