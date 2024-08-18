@@ -9,16 +9,21 @@ StatWkt <- ggplot2::ggproto(
     }
     ggplot2::ggproto_parent(ggplot2::Stat, self)$compute_layer(data, params, layout)
   },
-  compute_panel = function(data, scales, data_provider = NULL, product = "geometries/plz", read_body_hook = identity) {
+  compute_panel = function(data, scales, data_provider = NULL, product = "geometries/plz-shape", read_body_hook = identity, col_name_wkt = "shape_wkt", id_col = "id") {
     if (is.null(data_provider)) {
       datacake_abort("dataprovider_required")
     }
     cols_to_keep <- setdiff(names(data), c("geometry"))
     data_keep <- data[, cols_to_keep] %>%
-      unique()
+      unique() %>%
+      mutate(id = as.character(id))
     sb <- serve(product, data_provider, read_body_hook = read_body_hook) %>%
-      rename(geometry = shape_wkt) %>%
+      mutate(geometry = .[, col_name_wkt, drop = TRUE]) %>%
+      mutate(id = .[, id_col, drop = TRUE]) %>%
+      mutate(id = as.character(id)) %>%
+      select(-one_of(col_name_wkt)) %>%
       st_as_sf(wkt = "geometry")
+    print_debug(head(sb))
     st_crs(sb) <- 2056
     ret <- sb %>%
       inner_join(data_keep, by = "id", suffix = c("", "_y"))
@@ -126,36 +131,52 @@ geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = d
 #' @rdname geom_swiss_boundaries
 #' @export
 geom_canton <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
-                        na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
-
-    layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
-        position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, gov_level = "canton", data_provider = data_provider, ...))
-
+                     na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+  geometry_type <- "polygon"
+  id <- if_else(geometry_type == "polygon", "geometries/cantons-shape.parquet", "geometries/cantons-points.parquet")
+  legend <- if_else(is.na(show.legend) && geometry_type == "point", FALSE, NA)
+  c(
+    layer(data = data, mapping = mapping, stat = "wkt", geom = "sf",
+        position = position, show.legend = legend, inherit.aes = inherit.aes,
+        params = list(na.rm = na.rm, data_provider = data_provider, product = id, read_body_hook = extract_parquet_response, id_col = "bfs_num", ...)),
+    coord_sf(default = TRUE, default_crs = 2056)
+  )
 }
 
 #' @rdname geom_swiss_boundaries
 #' @export
 geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
-                        na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
-
-    layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
-        position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, gov_level = "commune", data_provider = data_provider, ...))
-
+                     na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+  geometry_type <- "polygon"
+  id <- if_else(geometry_type == "polygon", "geometries/communes-shape.parquet", "geometries/communes-points.parquet")
+  legend <- if_else(is.na(show.legend) && geometry_type == "point", FALSE, NA)
+  c(
+    layer(data = data, mapping = mapping, stat = "wkt", geom = "sf",
+        position = position, show.legend = legend, inherit.aes = inherit.aes,
+        params = list(na.rm = na.rm, data_provider = data_provider, product = id, read_body_hook = extract_parquet_response, id_col = "bfs_num", ...)),
+    coord_sf(default = TRUE, default_crs = 2056)
+  )
 }
+# geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
+#                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
+#
+#     layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
+#         position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+#         params = list(na.rm = na.rm, gov_level = "commune", data_provider = data_provider, ...))
+#
+# }
 
 #' @rdname geom_swiss_boundaries
 #' @export
 geom_plz <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                      na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, geometry_type = c("polygon", "point")) {
   geometry_type <- match.arg(geometry_type)
-  id <- if_else(geometry_type == "polygon", "geometries/plz", "geometries/plz-points")
+  id <- if_else(geometry_type == "polygon", "geometries/plz-shape.parquet", "geometries/plz-point.parquet")
   legend <- if_else(is.na(show.legend) && geometry_type == "point", FALSE, NA)
   c(
     layer(data = data, mapping = mapping, stat = "wkt", geom = "sf",
         position = position, show.legend = legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, data_provider = data_provider, product = id, read_body_hook = extract_qs_response, ...)),
+        params = list(na.rm = na.rm, data_provider = data_provider, product = id, read_body_hook = extract_parquet_response, id_col = "plz", ...)),
     coord_sf(default = TRUE, default_crs = 2056)
   )
 }

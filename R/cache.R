@@ -31,6 +31,11 @@ InMemoryCache <- R6::R6Class(
         private$cached_data[[idx]] <- obj
         names(private$cached_data)[idx] <- name
       }
+    },
+    clean_cache = function() {
+      cache <- vector(mode = "list", length = 1000L)
+      names(cache) <- rep("", 1000L)
+      private$cached_data <- cache
     }
   ),
   private = list(
@@ -49,7 +54,8 @@ FileCache <- R6::R6Class(
     initialize = function(cache_dir) {
       super$initialize()
       private$cache_dir <- path.expand(cache_dir) %>%
-        normalizePath(mustWork = FALSE)
+        normalizePath(mustWork = FALSE) %>%
+        paste0("/cake_storage")
       if (!dir.exists(private$cache_dir)) {
         dir.create(private$cache_dir)
       }
@@ -72,6 +78,13 @@ FileCache <- R6::R6Class(
         super$add(obj, name, overwrite)
         private$save_file(obj, name)
       }
+    },
+    clean_cache = function() {
+      super$clean_cache()
+      unlink(private$cache_dir, recursive = TRUE)
+    },
+    cache_directory = function() {
+      private$cache_dir
     }
   ),
   private = list(
