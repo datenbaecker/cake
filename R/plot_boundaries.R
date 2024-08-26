@@ -157,14 +157,6 @@ geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_da
     coord_sf(default = TRUE, default_crs = 2056)
   )
 }
-# geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
-#                         na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
-#
-#     layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
-#         position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-#         params = list(na.rm = na.rm, gov_level = "commune", data_provider = data_provider, ...))
-#
-# }
 
 #' @rdname geom_swiss_boundaries
 #' @export
