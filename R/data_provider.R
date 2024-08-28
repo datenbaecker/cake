@@ -120,7 +120,7 @@ create_default_data_provider <- function() {
     } else if(is.null(default_provider)) {
       default_provider <<- datenbaecker()
     }
-    default_provider
+    invisible(default_provider)
   }
 }
 
@@ -220,6 +220,40 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity, aler
   dt
 }
 
+order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
+  what <- paste0(dp$api_version_prefix, what)
+  url <- file.path(dp$host, what)
+  print_debug(sprintf("post %s", url))
+  post_res <- request(url) %>%
+    req_url_query(format = "parquet") %>%
+    req_body_json(body_json, auto_unbox = TRUE) %>%
+    req_perform() %>%
+    resp_body_json()
+  on.exit(unset_cake_progress_bar_style())
+  set_cake_progress_bar_style("cake")
+  prog_steps <- 10
+  print_debug(post_res$taskId)
+  cli_progress_bar("Processing request", total = prog_steps)
+  res_ready <- FALSE
+  ctr <- 0L
+  while (!res_ready) {
+    Sys.sleep(0.5)
+    if (ctr < prog_steps) {
+      cli_progress_update()
+    }
+    if (ctr %% 2 == 0) {
+      curr_res <- request(url) %>%
+        req_url_path_append(post_res$taskId) %>%
+        req_perform() %>%
+        resp_body_json()
+      res_ready <- curr_res$status == "completed"
+    }
+    ctr <- ctr + 1
+  }
+  request(curr_res$result$url) %>%
+    req_perform() %>%
+    read_body_hook()
+}
 
 #' @title Get Labels and ID for Entities
 #'
