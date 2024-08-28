@@ -231,12 +231,16 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
     resp_body_json()
   on.exit(unset_cake_progress_bar_style())
   set_cake_progress_bar_style("cake")
-  cli_progress_bar("Processing request", total = 10)
+  prog_steps <- 10
+  print_debug(post_res$taskId)
+  cli_progress_bar("Processing request", total = prog_steps)
   res_ready <- FALSE
   ctr <- 0L
   while (!res_ready) {
     Sys.sleep(0.5)
-    cli_progress_update()
+    if (ctr < prog_steps) {
+      cli_progress_update()
+    }
     if (ctr %% 2 == 0) {
       curr_res <- request(url) %>%
         req_url_path_append(post_res$taskId) %>%
@@ -244,6 +248,7 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
         resp_body_json()
       res_ready <- curr_res$status == "completed"
     }
+    ctr <- ctr + 1
   }
   request(curr_res$result$url) %>%
     req_perform() %>%
