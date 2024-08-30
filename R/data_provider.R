@@ -61,6 +61,7 @@ clean_cache <- function(data_provider) {
   }
 }
 
+
 #' @title Create Data Provider
 #'
 #' @param cache_dir \code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
@@ -70,7 +71,9 @@ clean_cache <- function(data_provider) {
 #' @export
 #'
 datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
-  print_logo()
+  if (connection_counter() == 1L) {
+    print_logo()
+  }
   baecker_url <- Sys.getenv("CAKE_URL", unset = "https://datacake.datenbaecker.ch/api")
   dp <- remote_data_provider(baecker_url, cache_dir, auth_info, "v1/")
   news <- serve("news", dp, alert_download = FALSE) %>%
@@ -79,7 +82,7 @@ datenbaecker <- function(cache_dir = NULL, auth_info = NULL) {
     cli_text("\n")
     cli_text(news)
   }
-  dp
+  invisible(dp)
 }
 
 #' @rdname datenbaecker
@@ -217,12 +220,12 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity, aler
     dt <- download_cake(dp, what, read_body_hook = read_body_hook, alert_download = alert_download)
     dp$cache$add(dt, what)
   }
+  attr(dt, "endpoint") <- what
   dt
 }
 
 order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
-  what <- paste0(dp$api_version_prefix, what)
-  url <- file.path(dp$host, what)
+  url <- file.path(dp$host, paste0(dp$api_version_prefix, what))
   print_debug(sprintf("post %s", url))
   post_res <- request(url) %>%
     req_url_query(format = "parquet") %>%
@@ -250,9 +253,11 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
     }
     ctr <- ctr + 1
   }
-  request(curr_res$result$url) %>%
+  ret <- request(curr_res$result$url) %>%
     req_perform() %>%
     read_body_hook()
+  attr(ret, "endpoint") <- what
+  ret
 }
 
 #' @title Get Labels and ID for Entities

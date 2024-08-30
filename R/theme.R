@@ -20,7 +20,7 @@ print_logo <- function() {
   ))
   cli::cat_rule(line_col = "black")
   cli::cat_line()
-  cli::cli_div(class = "tmp", theme = list(.tmp = list(color = col_red)))
+  d <- cli::cli_div(class = "tmp", theme = list(.tmp = list(color = col_red)))
   c(
     "  ██████  █████  ██   ██ ███████",
     " ██      ██   ██ ██  ██  ██     ",
@@ -30,6 +30,7 @@ print_logo <- function() {
   ) %>%
     cli::cli_verbatim()
   cli::cli_h1("served by {.strong Datenbäcker GmbH}")
+  cli::cli_end(d)
 }
 
 set_cake_progress_bar_style <- function(style = c("cake", "birthday_cake", "cookie", "donut", "bread", "croissant")) {
