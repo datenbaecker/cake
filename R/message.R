@@ -1,6 +1,6 @@
 
 supported_lang <- function() {
-  c("en", "de", "fr")
+  c("en", "de", "fr", "it")
 }
 
 get_lang <- function() {
@@ -53,6 +53,12 @@ get_cake_msg <- function(what) {
     ),
     abort_class = c(
       "en" = "Expected object of type {.cls {expected}} for argument {.arg {argument}}"
+    ),
+    no_endpoint = c(
+      "en" = "Attribute {.code endpoint} not found. Did you already edit the object?"
+    ),
+    no_metadata = c(
+      "en" = "No metadata available for this object."
     )
   )
   rel_msg <- msg[[what]]
