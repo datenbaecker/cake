@@ -213,18 +213,18 @@ serve.local_data_provider <- function(what, dp, ...) {
 }
 
 #' @export
-serve.remote_data_provider <- function(what, dp, read_body_hook = identity, alert_download = TRUE) {
+serve.remote_data_provider <- function(what, dp, read_body_hook = identity, alert_download = TRUE, metadata_endpoint = NULL) {
   what <- paste0(dp$api_version_prefix, what)
   dt <- dp$cache$get(what)
   if (is.null(dt)) {
     dt <- download_cake(dp, what, read_body_hook = read_body_hook, alert_download = alert_download)
     dp$cache$add(dt, what)
   }
-  attr(dt, "endpoint") <- what
+  attr(dt, "endpoint") <- coalesce(metadata_endpoint, what)
   dt
 }
 
-order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
+order_and_serve <- function(what, body_json, dp, read_body_hook = identity, metadata_endpoint = NULL) {
   url <- file.path(dp$host, paste0(dp$api_version_prefix, what))
   print_debug(sprintf("post %s", url))
   post_res <- request(url) %>%
@@ -256,7 +256,7 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity) {
   ret <- request(curr_res$result$url) %>%
     req_perform() %>%
     read_body_hook()
-  attr(ret, "endpoint") <- what
+  attr(ret, "endpoint") <- coalesce(metadata_endpoint, what)
   ret
 }
 
