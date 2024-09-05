@@ -12,7 +12,8 @@ get_address_features <- function(addresses = NULL, data_provider = default_data_
       "address-features",
       body_json = req_body,
       data_provider,
-      read_body_hook = extract_parquet_response
+      read_body_hook = extract_parquet_response,
+      timeout = 60
     )
   }
   data

@@ -59,6 +59,9 @@ get_cake_msg <- function(what) {
     ),
     no_metadata = c(
       "en" = "No metadata available for this object."
+    ),
+    timeout = c(
+      "en" = "The server did not respond in the usual amount of time. Please try again later..."
     )
   )
   rel_msg <- msg[[what]]
