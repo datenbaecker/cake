@@ -224,7 +224,10 @@ serve.remote_data_provider <- function(what, dp, read_body_hook = identity, aler
   dt
 }
 
-order_and_serve <- function(what, body_json, dp, read_body_hook = identity, metadata_endpoint = NULL) {
+order_and_serve <- function(
+    what, body_json, dp, read_body_hook = identity, metadata_endpoint = NULL,
+    timeout = 60
+) {
   url <- file.path(dp$host, paste0(dp$api_version_prefix, what))
   print_debug(sprintf("post %s", url))
   post_res <- request(url) %>%
@@ -234,6 +237,7 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity, meta
     resp_body_json()
   on.exit(unset_cake_progress_bar_style())
   set_cake_progress_bar_style("cake")
+  start_req <- Sys.time()
   prog_steps <- 10
   print_debug(post_res$taskId)
   cli_progress_bar("Processing request", total = prog_steps)
@@ -241,6 +245,9 @@ order_and_serve <- function(what, body_json, dp, read_body_hook = identity, meta
   ctr <- 0L
   while (!res_ready) {
     Sys.sleep(0.5)
+    if (difftime(Sys.time(), start_req, units = "secs") > timeout) {
+      cake_abort("timeout")
+    }
     if (ctr < prog_steps) {
       cli_progress_update()
     }
