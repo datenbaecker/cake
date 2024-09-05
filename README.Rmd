@@ -30,7 +30,12 @@ devtools::install_github("datenbaecker/cake")
 
 Take a look at the [cheat sheet](./cheatsheet.pdf) to get started.
 
-## Getting Help
+## Remarks
 
-If you encounter a bug, please file an issue with a minimal reproducible example on 
-[GitHub](https://github.com/datenbaecker/cake/issues).
+The package is still at an early stage of development, so certain things might
+not work as expected.
+Please file an issue with a minimal reproducible example on 
+[GitHub](https://github.com/datenbaecker/cake/issues) if you encounter
+any problems.
+
+Please give us a star if you like the package. Happy Coding!
