@@ -24,7 +24,11 @@ default_data_provider(dp = NULL)
 \item{cache_dir}{\code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
 The program asks if data should be saved to disk if the argument is \code{NULL}.}
 
+\item{auth_info}{Authentication info for the remote server (currently unused)}
+
 \item{host}{URL to the remote data provider}
+
+\item{api_version_prefix}{Version prefix for the URL}
 
 \item{dp}{Data provider that should act as default provider. Default is \code{datenbaecker()}.}
 }
