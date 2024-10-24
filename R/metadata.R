@@ -54,7 +54,7 @@ print.cake_metadata <- function(x, lang = get_lang(), include_description = TRUE
     cli_h2(src)
     cli::cli_end()
     curr_cols <- metadata %>%
-      filter(.data[, source_col, drop = TRUE] == src) %>%
+      filter(.data[[source_col]] == src) %>%
       arrange(.data$name)
     li <- cli_ul()
     for (col in curr_cols$name) {
