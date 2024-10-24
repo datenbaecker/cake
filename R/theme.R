@@ -22,14 +22,14 @@ print_logo <- function() {
   cli::cat_line()
   d <- cli::cli_div(class = "tmp", theme = list(.tmp = list(color = col_red)))
   c(
-    "  ██████  █████  ██   ██ ███████",
-    " ██      ██   ██ ██  ██  ██     ",
-    " ██      ███████ █████   █████  ",
-    " ██      ██   ██ ██  ██  ██     ",
-    "  ██████ ██   ██ ██   ██ ███████"
+    "  \U2588\U2588\U2588\U2588\U2588\U2588  \U2588\U2588\U2588\U2588\U2588  \U2588\U2588   \U2588\U2588 \U2588\U2588\U2588\U2588\U2588\U2588\U2588",
+    " \U2588\U2588      \U2588\U2588   \U2588\U2588 \U2588\U2588  \U2588\U2588  \U2588\U2588     ",
+    " \U2588\U2588      \U2588\U2588\U2588\U2588\U2588\U2588\U2588 \U2588\U2588\U2588\U2588\U2588   \U2588\U2588\U2588\U2588\U2588  ",
+    " \U2588\U2588      \U2588\U2588   \U2588\U2588 \U2588\U2588  \U2588\U2588  \U2588\U2588     ",
+    "  \U2588\U2588\U2588\U2588\U2588\U2588 \U2588\U2588   \U2588\U2588 \U2588\U2588   \U2588\U2588 \U2588\U2588\U2588\U2588\U2588\U2588\U2588"
   ) %>%
     cli::cli_verbatim()
-  cli::cli_h1("served by {.strong Datenbäcker GmbH}")
+  cli::cli_h1("served by {.strong Datenb\u00e4cker GmbH}")
   cli::cli_end(d)
 }
 
@@ -57,11 +57,14 @@ datenbaecker_scale_gradient <- function(...) {
   scale_fill_gradient(low = col_brown, high = col_red, ...)
 }
 
-#' @importFrom ggplot2 theme_minimal
-#' @importFrom ggplot2 "%+replace%"
-#' @importFrom ggplot2 update_geom_defaults
-#' @importFrom ggplot2 theme
+
+#' Theme for ggplot2
+#'
+#' @param ... Arguments for \code{\link[ggplot2]{theme_minimal}}
+#'
+#' @return The ggplot theme which is also set as default for the session
 #' @export
+#'
 datenbaecker_theme <- function(...) {
 
   options(ggplot2.continuous.fill=datenbaecker_scale_gradient)

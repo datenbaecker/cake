@@ -97,7 +97,6 @@ StatBoundary <- ggplot2::ggproto(
 #' @param data Data with the units for plotting
 #' @param data_provider A cake data provider. Default is \code{\link[cake]{default_data_provider}}.
 #' @inheritParams ggplot2::geom_polygon
-#' @param gov_level Goverment level (either \dQuote{commune} or \dQuote{canton})
 #'
 #' @section Aesthetics:
 #' The only required aesthetics is \code{id} and should contain the
@@ -115,21 +114,14 @@ StatBoundary <- ggplot2::ggproto(
 #' cantons <- tibble(label = c("LU", "ZH"))
 #' ggplot(cantons, aes(id = label)) +
 #'   geom_canton() +
-#'   geom_commune(data = tibble(label = c("Luzern", "Zürich", "Zug")), fill = "white", color = "darkgrey")
+#'   geom_commune(
+#'     data = tibble(label = c("Luzern", "Zürich", "Zug")),
+#'     fill = "white", color = "darkgrey"
+#'   )
 #' }
 #'
 #' @export
 #'
-geom_swiss_boundaries <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
-                        na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, gov_level = c("canton", "commune", "plz")) {
-  gov_level <- match.arg(gov_level)
-  layer(data = data, mapping = mapping, stat = "boundary", geom = "polygon",
-        position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, gov_level = gov_level, data_provider = data_provider, ...))
-}
-
-#' @rdname geom_swiss_boundaries
-#' @export
 geom_canton <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                      na.rm = FALSE, show.legend = NA, inherit.aes = TRUE) {
   geometry_type <- "polygon"
@@ -159,6 +151,7 @@ geom_commune <- function(mapping = NULL, data = NULL, data_provider = default_da
 }
 
 #' @rdname geom_swiss_boundaries
+#' @param geometry_type What geometry type should be plotted (\code{"polygon"} or \code{"point"})
 #' @export
 geom_plz <- function(mapping = NULL, data = NULL, data_provider = default_data_provider(), position = "identity", ...,
                      na.rm = FALSE, show.legend = NA, inherit.aes = TRUE, geometry_type = c("polygon", "point")) {

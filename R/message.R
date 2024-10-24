@@ -18,19 +18,19 @@ get_cake_msg <- function(what) {
   msg <- list(
     delete_cache_data = c(
       "en" = "{.strong This command deletes all data in {.path {cache_data_path}}. Do you wish to continue (y/n)?}",
-      "de" = "{.strong Dieser Befehl löscht sämtliche Daten in {.path {cache_data_path}}. Willst du fortfahren (j/n)?}"
+      "de" = "{.strong Dieser Befehl l\u00f6scht s\u00e4mtliche Daten in {.path {cache_data_path}}. Willst du fortfahren (j/n)?}"
     ),
     cache_data = c(
       "en" = "{.strong Would you like to save the data on your disc? (y/n)}",
-      "de" = "{.strong Möchtest du die Daten lokal speichern? (j/n)}"
+      "de" = "{.strong M\u00f6chtest du die Daten lokal speichern? (j/n)}"
     ),
     info_cache_data = c(
       "en" = "{.pkg cake} may save the data on your local disc.
         This speeds up data loading in subsequent R session.
         Specify {.arg cache_data} if you don't want to answer this question in future calls.",
        "de" = "{.pkg cake} kann die Daten auf deiner lokalen Festplatte speichern.
-        Das beschleunigt das Laden der Daten in zukünftigen R-Sessions.
-        Spezifiziere {.arg cache_data} falls du diese Frage zukünftig nicht mehr erhalten möchtest."
+        Das beschleunigt das Laden der Daten in zuk\u00fcnftigen R-Sessions.
+        Spezifiziere {.arg cache_data} falls du diese Frage zuk\u00fcnftig nicht mehr erhalten m\u00f6chtest."
     ),
     invalid_cache_data_arg = c(
       "en" = "{.arg cache_data} must be of class {.cls character} or {.cls logical}.",
@@ -46,7 +46,7 @@ get_cake_msg <- function(what) {
     ),
     not_in_menu = c(
       "en" = "Value for {.arg what} or {.arg flavor} is invalid. Check {.code menu} for data catalog.",
-      "de" = "Wert für {.arg what} oder {.arg flavor} ist nicht gültig. Siehe {.code menu} für Datenkatalog."
+      "de" = "Wert f\u00fcr {.arg what} oder {.arg flavor} ist nicht g\u00fcltig. Siehe {.code menu} f\u00fcr Datenkatalog."
     ),
     dataprovider_required = c(
       "en" = "No value for {.arg data_provider} provided."

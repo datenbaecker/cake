@@ -47,7 +47,14 @@ create_default_cache <- function() {
   cache_data_path
 }
 
+#' Clean Data Cache
+#'
+#' @param data_provider An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})
+#'
+#' @description Cleans the cached data in memory and on disk.
+#'
 #' @export
+#'
 clean_cache <- function(data_provider) {
   cache <- data_provider$cache
   if (inherits(cache, "FileCache")) {
@@ -61,11 +68,11 @@ clean_cache <- function(data_provider) {
   }
 }
 
-
 #' @title Create Data Provider
 #'
 #' @param cache_dir \code{logical} if downloaded data should to be saved to disk or a \code{character} containing a directory path to the cache folder.
 #' The program asks if data should be saved to disk if the argument is \code{NULL}.
+#' @param auth_info Authentication info for the remote server (currently unused)
 #'
 #' @return An object of type \code{data_provider}
 #' @export
@@ -95,6 +102,7 @@ local_data_provider <- function(cache_dir) {
 
 #' @rdname datenbaecker
 #' @param host URL to the remote data provider
+#' @param api_version_prefix Version prefix for the URL
 #' @export
 remote_data_provider <- function(host, cache_dir = NULL, auth_info = NULL, api_version_prefix = "") {
   if (is.null(cache_dir)) {
@@ -137,7 +145,6 @@ abort_if_wrong_class <- function(dp, expect_cls) {
     cake_abort_class(expect_cls, dp)
   }
 }
-
 
 extract_swiss_boundaries <- function(res) {
   file_conn <- resp_body_raw(res) %>%
@@ -213,7 +220,7 @@ serve.local_data_provider <- function(what, dp, ...) {
 }
 
 #' @export
-serve.remote_data_provider <- function(what, dp, read_body_hook = identity, alert_download = TRUE, metadata_endpoint = NULL) {
+serve.remote_data_provider <- function(what, dp, read_body_hook = identity, alert_download = TRUE, metadata_endpoint = NULL, ...) {
   what <- paste0(dp$api_version_prefix, what)
   dt <- dp$cache$get(what)
   if (is.null(dt)) {
@@ -231,9 +238,11 @@ order_and_serve <- function(
   url <- file.path(dp$host, paste0(dp$api_version_prefix, what))
   print_debug(sprintf("post %s", url))
   post_res <- request(url) %>%
-    req_url_query(format = "parquet") %>%
-    req_body_json(body_json, auto_unbox = TRUE) %>%
-    req_perform() %>%
+      req_url_query(format = "parquet") %>%
+      req_body_json(body_json, auto_unbox = TRUE) %>%
+      req_error(body = function(resp) resp_body_json(resp)$detail) %>%
+      req_perform()
+  post_res <- post_res %>%
     resp_body_json()
   on.exit(unset_cake_progress_bar_style())
   set_cake_progress_bar_style("cake")
@@ -268,13 +277,12 @@ order_and_serve <- function(
 }
 
 #' @title Get Labels and ID for Entities
+#' @name get_cantonal_entities
 #'
 #' @param dp An object of type \code{data_provider} (see \code{\link[cake]{datenbaecker}})
 #'
 #' @return A \code{data.frame} with columns \code{id} and \code{label} containing the
 #' identifiers and labels from the office of federal statistics.
-#' \code{get_statistical_units} returns all entities and has an additional column
-#' \code{entity} to identify the type of entity.
 #'
 #' @references The source of the data is the swissBOUNDARIES3D dataset from
 #' the Federal Office of Topography swisstopo:
@@ -285,57 +293,39 @@ order_and_serve <- function(
 #'
 #' @examples
 #' \dontrun{
-#' dp <- datenbaecker()
-#' cantons <- get_cantonal(entities)
-#' communes <- get_communal_entities()
+#' # This code depends on the availability of the remote server
+#' dp <- datenbaecker(cache_dir = FALSE)
+#' cantons <- get_cantonal_(entities, dp = dp)
+#' communes <- get_communal_entities(dp = dp)
 #' }
-get_statistical_entities <- function(dp = default_data_provider()) {
-  ct <- get_cantonal_entites(dp) %>%
-    mutate(entity = "canton")
-  get_communal_entities(dp) %>%
-    mutate(entity = "commune")
-  bind_rows(ct, cm) %>%
-    remove_rownames()
-}
-
-#' @rdname get_statistical_entities
-#' @export
 get_cantonal_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/cantons-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    select(bfs_num, label, name) %>%
-    arrange(bfs_num) %>%
-    rename(id = bfs_num)
+    select(.data$bfs_num, .data$label, .data$name) %>%
+    arrange(.data$bfs_num) %>%
+    rename(id = .data$bfs_num)
 }
 
-#' @rdname get_statistical_entities
+#' @rdname get_cantonal_entities
 #' @export
 get_plz_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/plz-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    select(plz) %>%
+    select(.data$plz) %>%
     unique() %>%
-    mutate(id = plz) %>%
-    select(id, plz) %>%
+    mutate(id = .data$plz) %>%
+    select(.data$id, .data$plz) %>%
     remove_rownames()
 }
 
-#' @rdname get_statistical_entities
+#' @rdname get_cantonal_entities
 #' @export
 get_communal_entites <- function(dp = default_data_provider()) {
   sb <- serve("geometries/communes-shape.parquet", dp, read_body_hook = extract_parquet_response)
   sb %>%
-    select(bfs_num, name, kanton_label) %>%
-    arrange(bfs_num) %>%
-    rename(id = bfs_num) %>%
+    select(.data$bfs_num, .data$name, .data$kanton_label) %>%
+    arrange(.data$bfs_num) %>%
+    rename(id = .data$bfs_num) %>%
     unique() %>%
     remove_rownames()
 }
-
-# menu <- function() {
-#   UseMethod("menu", dp)
-# }
-#
-# ask <- function(dp, about, considering = c("license")) {
-#
-# }
