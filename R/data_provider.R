@@ -166,10 +166,6 @@ extract_parquet_response <- function(res) {
   read_parquet(file_conn)
 }
 
-extract_company_parquet_response <- function(res) {
-  resp_body_raw(res)
-}
-
 download_cake <- function(dp, what, read_body_hook = identity, alert_download = TRUE) {
   abort_if_wrong_class(dp, "remote_data_provider")
   url <- file.path(dp$host, what)
