@@ -269,9 +269,16 @@ order_and_serve <- function(
     }
     ctr <- ctr + 1
   }
-  ret <- request(curr_res$result$url) %>%
-    req_perform() %>%
-    read_body_hook()
+  res_url <- curr_res$result$url
+  ret <- vector(mode = "list", length = length(res_url))
+  for (i in seq_along(res_url)) {
+    ret[[i]] <- request(res_url[[i]]) %>%
+     req_perform() %>%
+     read_body_hook()
+  }
+  if (length(ret) == 1) {
+    ret <- ret[[1]]
+  }
   attr(ret, "endpoint") <- coalesce(metadata_endpoint, what)
   ret
 }
