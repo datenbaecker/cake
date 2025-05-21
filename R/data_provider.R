@@ -166,6 +166,10 @@ extract_parquet_response <- function(res) {
   read_parquet(file_conn)
 }
 
+extract_company_parquet_response <- function(res) {
+  resp_body_raw(res)
+}
+
 download_cake <- function(dp, what, read_body_hook = identity, alert_download = TRUE) {
   abort_if_wrong_class(dp, "remote_data_provider")
   url <- file.path(dp$host, what)
@@ -269,9 +273,16 @@ order_and_serve <- function(
     }
     ctr <- ctr + 1
   }
-  ret <- request(curr_res$result$url) %>%
-    req_perform() %>%
-    read_body_hook()
+  res_url <- curr_res$result$url
+  ret <- vector(mode = "list", length = length(res_url))
+  for (i in seq_along(res_url)) {
+    ret[[i]] <- request(res_url[[i]]) %>%
+     req_perform() %>%
+     read_body_hook()
+  }
+  if (length(ret) == 1) {
+    ret <- ret[[1]]
+  }
   attr(ret, "endpoint") <- coalesce(metadata_endpoint, what)
   ret
 }
