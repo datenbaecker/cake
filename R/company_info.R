@@ -29,8 +29,10 @@ search_companies <- function(companies, data_provider = default_data_provider())
     read_body_hook = extract_parquet_response,
     timeout = 120
   )
-  names(data) <- c("company_details", "related_companies")
+  names(data) <- c("company_details", "related_companies", "mentioned_persons")
   data$related_companies <- data$related_companies %>%
     filter(!is.na(related_uid))
+  data$mentioned_persons <- data$mentioned_persons %>%
+    filter(!is.na(sogc_id))
   data
 }
