@@ -11,6 +11,7 @@
 #' @return A list with:
 #' * \code{company_details}: A table with information for the searched companies (legal form, address, etc.)
 #' * \code{related_companies}: A table with related companies for the search companies
+#' * \code{mentioned_persons}: A table with persons that are getting mentioned in a publication of the Swiss Official Gazette of Commerce (SOGC)
 #' @export
 #'
 #' @examples
